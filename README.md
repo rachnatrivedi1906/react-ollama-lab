@@ -13,13 +13,13 @@ This lab focuses on the **core frontend patterns behind AI chat interfaces**, in
 
 ---
 
-## 🎯 Learning Outcome
+## Learning Outcome
 
 You will **build a working AI chatbot interface** within a professional HR support context using the **Identify → Assemble → Execute → Verify process**, applying React state management, async logic, and UI feedback patterns to meet a fully passing automated test suite.
 
 ---
 
-## 🧰 What You’ll Get
+## What You’ll Get
 
 ### Support
 - Starter React project (Vite)
@@ -35,7 +35,7 @@ You will **build a working AI chatbot interface** within a professional HR suppo
 
 ---
 
-## 🧠 What You’ll Learn
+## What You’ll Learn
 
 You will be able to:
 
@@ -48,7 +48,7 @@ You will be able to:
 
 ---
 
-## 🧪 How You’ll Show It
+## How You’ll Show It
 
 You will submit:
 
@@ -57,7 +57,7 @@ You will submit:
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 Install dependencies:
 
