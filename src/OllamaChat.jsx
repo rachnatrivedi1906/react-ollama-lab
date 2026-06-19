@@ -4,21 +4,44 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 export default function OllamaChat() {
-  // TODO: Add state for input, messages, loading, and error.
+  const [prompt, setPrompt] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const canSend = prompt.trim() !== "" && !loading;
 
   const handleAsk = async () => {
-    // TODO: Prevent empty submissions and duplicate submissions while loading.
-    // TODO: Create a user message object.
-    // TODO: Add the user message to the message thread.
-    // TODO: Clear the input, reset errors, and turn loading on.
-    // TODO: Call Ollama.chat with model "llama3.2" and the updated message history.
-    // TODO: Add the assistant response to the message thread.
-    // TODO: Show a helpful error if the request fails.
-    // TODO: Turn loading off after success or failure.
+    if (!canSend) return;
+    const userMessage = { role: "user", content: prompt.trim() };
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
+    setPrompt("");
+    setError("");
+    setLoading(true);
+    try {
+      const response = await Ollama.chat({ model: "llama3.2", messages: nextMessages });
+      const assistantMessage = { role: "assistant", content: response.message.content };
+      setMessages(prev => [...prev, assistantMessage]);
+      } catch (e) {
+        let friendlyMsg = 'Failed to get response from Ollama.';
+        // Detect network fetch failures (e.g., server not running)
+        if (e && typeof e === 'object' && 'message' in e && e.message && e.message.includes('Failed to fetch')) {
+          friendlyMsg += ' Ensure the Ollama server is running and accessible at the expected URL (e.g., http://localhost:11434).';
+        } else if (e && e.message) {
+          friendlyMsg += ` ${e.message}`;
+        }
+        setError(friendlyMsg);
+      } finally {
+      setLoading(false);
+    }
   };
 
   const clearChat = () => {
-    // TODO: Clear messages, input, and error.
+    setMessages([]);
+    setPrompt("");
+    setError("");
+    setLoading(false);
   };
 
   return (
@@ -26,38 +49,46 @@ export default function OllamaChat() {
       <div className="chat-card">
         <header className="chat-header">
           <h1>HR Help Assistant</h1>
-          <p>
-            Build a local AI chatbot prototype that helps employees ask general HR questions.
-          </p>
+          <p>Build a local AI chatbot prototype that helps employees ask general HR questions.</p>
         </header>
-
         <p className="chat-guidance">
-          Ask about general HR topics such as benefits, time off, policies, or workplace procedures.
-          Do not enter private, sensitive, or personal information.
+          Ask about general HR topics such as benefits, time off, policies, or workplace procedures. Do not enter private, sensitive, or personal information.
         </p>
-
         <div className="chat-input-area">
-          <label htmlFor="chat-prompt" className="sr-only">
-            Ask the HR assistant
-          </label>
-          {/* TODO: Set up textarea */}
+          <label htmlFor="chat-prompt" className="sr-only">Ask the HR assistant</label>
           <textarea
             id="chat-prompt"
             rows="5"
             className="chat-textarea"
             placeholder="Ask about benefits, PTO, or workplace policies..."
+            value={prompt}
+            onChange={e => setPrompt(e.target.value)}
+            disabled={loading}
           />
         </div>
-
-        {/* TODO: Configure buttons */}
         <div className="chat-actions">
-          <button className="chat-button">Send</button>
-          <button className="chat-button chat-button-secondary">Clear thread</button>
+          <button className="chat-button" onClick={handleAsk} disabled={!canSend}>Send</button>
+          <button
+            className="chat-button chat-button-secondary"
+            onClick={clearChat}
+            disabled={messages.length === 0 && !error && !loading}
+          >
+            Clear thread
+          </button>
         </div>
-
+        {error && <p className="chat-error" role="alert">{error}</p>}
         <div className="message-list" aria-label="Conversation thread">
-          {/* TODO: Render user and assistant messages here. */}
-          {/* TODO: Render a temporary Assistant / Thinking... message while loading. */}
+          {messages.map((msg, idx) => (
+            <article key={idx} className="chat-message" aria-label="message">
+              <strong>{msg.role === "user" ? "You" : "Assistant"}</strong>: 
+              {msg.role === "assistant" ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+              ) : (
+                <span>{msg.content}</span>
+              )}
+            </article>
+          ))}
+          {loading && <p className="chat-thinking" aria-live="polite">Thinking...</p>}
         </div>
       </div>
     </section>
